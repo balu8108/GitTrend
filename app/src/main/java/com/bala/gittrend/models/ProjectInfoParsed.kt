@@ -9,6 +9,10 @@ data class ProjectInfoParsed(
     val name: String,
     @SerializedName("language")
     val language: String?,
+    @SerializedName("description")
+    val description: String,
+    @SerializedName("html_url")
+    val projectUrl: String,
     @SerializedName("forks_count")
     val forksCount: Long,
     @SerializedName("stargazers_count")

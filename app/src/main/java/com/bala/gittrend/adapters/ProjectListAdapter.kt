@@ -3,6 +3,7 @@ package com.bala.gittrend.adapters
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -40,6 +41,20 @@ class ProjectListAdapter @Inject constructor(@ActivityContext val context: Conte
                     .into(ownerPhoto)
                 projectOwnerName.text = projectItem.projectOwnerDetails.ownerName
                 projectName.text = projectItem.name
+
+                description.text = projectItem.description + "(" + projectItem.projectUrl + ")"
+
+                if (projectItem.language != null) {
+                    language.desc.text = projectItem.language
+                } else {
+                    language.root.isVisible = false
+                }
+
+                stars.icon.setImageResource(R.mipmap.star_yellow)
+                stars.desc.text = projectItem.starGazersCount.toString()
+
+                forks.icon.setImageResource(R.mipmap.fork_black)
+                forks.desc.text = projectItem.forksCount.toString()
             }
         }
     }

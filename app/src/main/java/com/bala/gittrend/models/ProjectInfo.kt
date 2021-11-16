@@ -9,6 +9,8 @@ data class ProjectInfo(
     val id: Long,
     val name: String,
     val language: String?,
+    val description: String,
+    val projectUrl: String,
     val forksCount: Long,
     val starGazersCount: Long,
     val projectOwnerId: Long

@@ -57,6 +57,8 @@ class ProjectRepository @Inject constructor(
             projectInfoParsed.id,
             projectInfoParsed.name,
             projectInfoParsed.language,
+            projectInfoParsed.description,
+            projectInfoParsed.projectUrl,
             projectInfoParsed.forksCount,
             projectInfoParsed.starGazersCount,
             projectInfoParsed.projectOwnerDetails.ownerId

@@ -20,6 +20,8 @@ data class ProjectOwnerWithProjects(
                     projectInfo.id,
                     projectInfo.name,
                     projectInfo.language,
+                    projectInfo.description,
+                    projectInfo.projectUrl,
                     projectInfo.forksCount,
                     projectInfo.starGazersCount,
                     projectOwnerDetails
