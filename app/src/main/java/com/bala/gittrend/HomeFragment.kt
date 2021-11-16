@@ -6,8 +6,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import com.bala.gittrend.adapters.ProjectListAdapter
 import com.bala.gittrend.databinding.FragmentHomeBinding
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
@@ -16,6 +23,9 @@ class HomeFragment : Fragment() {
     private val viewBinding
         get() = _viewBinding!!
     private var _viewBinding: FragmentHomeBinding? = null
+
+    @Inject
+    lateinit var projectListAdapter: ProjectListAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -31,6 +41,14 @@ class HomeFragment : Fragment() {
     }
 
     private fun init() {
-        viewModel
+        viewBinding.gitRepoList.adapter = projectListAdapter
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED)
+            {
+                viewModel.projectList.collect { projectList ->
+                    projectListAdapter.submitList(projectList)
+                }
+            }
+        }
     }
 }

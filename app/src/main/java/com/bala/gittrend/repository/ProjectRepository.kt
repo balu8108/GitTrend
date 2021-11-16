@@ -15,7 +15,7 @@ class ProjectRepository @Inject constructor(
     private val projectDao: ProjectDao
 ) {
 
-    fun fetchTrendingMovies(): Flow<List<ProjectOwnerWithProjects>> {
+    fun fetchTrendingProjects(): Flow<List<ProjectOwnerWithProjects>> {
         application.launch(Dispatchers.IO) {
             val result = apiService.fetchTrendingGitRepos()
             if (result.isSuccess) {

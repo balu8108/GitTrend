@@ -10,5 +10,22 @@ data class ProjectOwnerWithProjects(
         parentColumn = "ownerId",
         entityColumn = "projectOwnerId"
     )
-    val projectInfo: List<ProjectInfo>
-)
+    val projectInfos: List<ProjectInfo>
+) {
+    fun getProjectListFromProjectOwnerWithProjects(): List<ProjectInfoParsed> {
+        val projectLists = mutableListOf<ProjectInfoParsed>()
+        for (projectInfo in projectInfos) {
+            projectLists.add(
+                ProjectInfoParsed(
+                    projectInfo.id,
+                    projectInfo.name,
+                    projectInfo.language,
+                    projectInfo.forksCount,
+                    projectInfo.starGazersCount,
+                    projectOwnerDetails
+                )
+            )
+        }
+        return projectLists
+    }
+}
