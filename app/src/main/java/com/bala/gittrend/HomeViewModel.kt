@@ -13,22 +13,18 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    val savedStateHandle: SavedStateHandle,
     private val projectRepository: ProjectRepository
 ) : ViewModel() {
 
-    val projectList by lazy {
-        projectRepository.fetchTrendingProjects().map { projectOwnerWithProjects ->
+    val projectListWithResultStatus by lazy {
+        projectRepository.fetchTrendingProjects().map { projectOwnerWithProjectsWithResult ->
+            val resultStatus = projectOwnerWithProjectsWithResult.first
+            val projectOwnerWithProjects = projectOwnerWithProjectsWithResult.second
             val projectList = mutableListOf<ProjectInfoParsed>()
             for (projectOwnerWithProject in projectOwnerWithProjects) {
                 projectList.addAll(projectOwnerWithProject.getProjectListFromProjectOwnerWithProjects())
             }
-            // if (projectOwnerWithProjects.isSuccess) {
-            /*for (item in projectOwnerWithProjects) {
-                Log.d("balatag", ": $item")
-            }*/
-            //  }
-            projectList.toList()
+            Pair(resultStatus, projectList.toList())
         }.shareIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 1)
     }
 }

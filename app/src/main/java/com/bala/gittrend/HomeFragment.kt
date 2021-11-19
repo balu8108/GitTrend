@@ -48,12 +48,19 @@ class HomeFragment : Fragment() {
         lifecycleScope.launch(Dispatchers.Main) {
             repeatOnLifecycle(Lifecycle.State.STARTED)
             {
-                viewModel.projectList.collect { projectList ->
-                    projectListAdapter.submitList(projectList) {
-                        if (view != null && projectList.isNotEmpty()) {
-                            viewBinding.loadingView.root.isVisible = false
-                            viewBinding.gitRepoList.isVisible = true
+                viewModel.projectListWithResultStatus.collect { projectListWithResultStatus ->
+                    val status = projectListWithResultStatus.first
+                    val projectList = projectListWithResultStatus.second
+                    if (status) {
+                        projectListAdapter.submitList(projectList) {
+                            if (view != null && projectList.isNotEmpty()) {
+                                viewBinding.loadingView.root.isVisible = false
+                                viewBinding.gitRepoList.isVisible = true
+                            }
                         }
+                    } else {
+                        viewBinding.loadingView.root.isVisible = false
+                        viewBinding.errorScreen.root.isVisible = true
                     }
                 }
             }

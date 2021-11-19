@@ -1,10 +1,13 @@
 package com.bala.gittrend.repository
 
+import androidx.datastore.preferences.core.edit
 import com.bala.gittrend.GitTrendApplication
 import com.bala.gittrend.apiservice.ApiService
+import com.bala.gittrend.datastore.DataStorePreferenceKeys
 import com.bala.gittrend.models.*
+import com.bala.gittrend.utils.kotlinExtensionUtils.dataStore
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -15,7 +18,7 @@ class ProjectRepository @Inject constructor(
     private val projectDao: ProjectDao
 ) {
 
-    fun fetchTrendingProjects(): Flow<List<ProjectOwnerWithProjects>> {
+    fun fetchTrendingProjects(): Flow<Pair<Boolean, List<ProjectOwnerWithProjects>>> {
         application.launch(Dispatchers.IO) {
             val result = apiService.fetchTrendingGitRepos()
             if (result.isSuccess) {
@@ -31,16 +34,46 @@ class ProjectRepository @Inject constructor(
                         getProjectOwners(projectInfoParsedList)
                     }
                     projectDao.insertProjectOwnerDetails(projectOwners)
+                    application.dataStore.edit { dataStore ->
+                        dataStore[DataStorePreferenceKeys.LAST_SUCCESS_API_CALL] =
+                            System.currentTimeMillis()
+                    }
+                }
+            } else {
+                application.dataStore.data.map { preferences ->
+                    preferences[DataStorePreferenceKeys.LAST_SUCCESS_API_CALL] ?: -1
+                }.flatMapLatest { lastSuccessAppiCallTimeStamp ->
+                    val isCacheExpired =
+                        if (lastSuccessAppiCallTimeStamp == -1L) false else ((System.currentTimeMillis() - lastSuccessAppiCallTimeStamp) > CACHE_EXPIRY_TIME)
+                    if (isCacheExpired) {
+                        flow<Pair<Boolean, List<ProjectOwnerWithProjects>>> {
+                            emit(Pair(false, emptyList()))
+                        }
+                    } else {
+                        fetchTrendingProjectsCached()
+                    }
                 }
             }
         }
         return fetchTrendingProjectsCached()
     }
 
-    private fun fetchTrendingProjectsCached(): Flow<List<ProjectOwnerWithProjects>> {
-        return projectDao.getProjectOwnerWithProjects()/*.map {
-            Result.success(it)
-        }*/
+    private fun fetchTrendingProjectsCached(): Flow<Pair<Boolean, List<ProjectOwnerWithProjects>>> {
+        return application.dataStore.data.map { preferences ->
+            preferences[DataStorePreferenceKeys.LAST_SUCCESS_API_CALL] ?: -1
+        }.flatMapLatest { lastSuccessAppiCallTimeStamp ->
+            val isCacheExpired =
+                if (lastSuccessAppiCallTimeStamp == -1L) false else ((System.currentTimeMillis() - lastSuccessAppiCallTimeStamp) > CACHE_EXPIRY_TIME)
+            if (isCacheExpired) {
+                flow<Pair<Boolean, List<ProjectOwnerWithProjects>>> {
+                    emit(Pair(false, emptyList()))
+                }
+            } else {
+                projectDao.getProjectOwnerWithProjects().map {
+                    Pair(true, it)
+                }
+            }
+        }
     }
 
     private fun getProjectInfos(projectInfoParsedList: ProjectInfoParsedList): List<ProjectInfo> {
@@ -72,5 +105,9 @@ class ProjectRepository @Inject constructor(
         }
 
         return projectOwners
+    }
+
+    companion object {
+        private const val CACHE_EXPIRY_TIME = 2 * 60 * 1000L
     }
 }

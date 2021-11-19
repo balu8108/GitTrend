@@ -2,15 +2,20 @@ package com.bala.gittrend.apiservice
 
 import com.bala.gittrend.models.ProjectInfoParsedList
 import com.bala.gittrend.utils.ErrorUtils
+import retrofit2.Response
 import retrofit2.Retrofit
 import javax.inject.Inject
 
 class ApiService @Inject constructor(private val retrofit: Retrofit) {
 
     suspend fun fetchTrendingGitRepos(): Result<ProjectInfoParsedList?> {
-        val apiInterface = retrofit.create(ApiInterface::class.java);
-        val response = apiInterface.getProjectInfoParsed()
-
+        val apiInterface = retrofit.create(ApiInterface::class.java)
+        val response: Response<ProjectInfoParsedList?>
+        try {
+            response = apiInterface.getProjectInfoParsed()
+        } catch (error: Throwable) {
+            return Result.failure(Error("Unknown Error"))
+        }
         return try {
             if (response.isSuccessful) {
                 Result.success(response.body())

@@ -1,6 +1,5 @@
 package com.bala.gittrend.apiservice
 
-import com.bala.gittrend.models.ProjectInfoParsed
 import com.bala.gittrend.models.ProjectInfoParsedList
 import retrofit2.Response
 import retrofit2.http.GET
