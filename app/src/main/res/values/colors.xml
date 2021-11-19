@@ -12,5 +12,7 @@
     <color name="grey_divider">#FFE8E8E8</color>
     <color name="pressed_state">#42000000</color>
     <color name="skeleton_background">#eeeeee</color>
+    <color name="error_screen_title">#FF4A4A4A</color>
+    <color name="error_screen_sub_text">#FF929292</color>
 
 </resources>
