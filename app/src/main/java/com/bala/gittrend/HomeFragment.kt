@@ -12,6 +12,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.bala.gittrend.adapters.ProjectListAdapter
 import com.bala.gittrend.databinding.FragmentHomeBinding
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -42,7 +43,7 @@ class HomeFragment : Fragment() {
 
     private fun init() {
         viewBinding.gitRepoList.adapter = projectListAdapter
-        lifecycleScope.launch {
+        lifecycleScope.launch(Dispatchers.Main) {
             repeatOnLifecycle(Lifecycle.State.STARTED)
             {
                 viewModel.projectList.collect { projectList ->
