@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/skeleton_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <include
+        android:id="@+id/view_1"
+        layout="@layout/loading_project_item" />
+
+    <include
+        android:id="@+id/view_2"
+        layout="@layout/loading_project_item" />
+
+    <include
+        android:id="@+id/view_3"
+        layout="@layout/loading_project_item" />
+
+    <include
+        android:id="@+id/view_4"
+        layout="@layout/loading_project_item" />
+
+    <include
+        android:id="@+id/view_5"
+        layout="@layout/loading_project_item" />
+
+    <include
+        android:id="@+id/view_6"
+        layout="@layout/loading_project_item" />
+
+    <include
+        android:id="@+id/view_7"
+        layout="@layout/loading_project_item" />
+
+    <include
+        android:id="@+id/view_8"
+        layout="@layout/loading_project_item" />
+
+    <include
+        android:id="@+id/view_9"
+        layout="@layout/loading_project_item" />
+
+    <include
+        android:id="@+id/view_10"
+        layout="@layout/loading_project_item" />
+
+    <androidx.constraintlayout.helper.widget.Flow
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:constraint_referenced_ids="view_1,view_2,view_3,view_4,view_5,view_6,view_7,view_8,view_9,view_10"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -43,11 +44,17 @@ class HomeFragment : Fragment() {
 
     private fun init() {
         viewBinding.gitRepoList.adapter = projectListAdapter
+        viewBinding.loadingView.root.isVisible = true
         lifecycleScope.launch(Dispatchers.Main) {
             repeatOnLifecycle(Lifecycle.State.STARTED)
             {
                 viewModel.projectList.collect { projectList ->
-                    projectListAdapter.submitList(projectList)
+                    projectListAdapter.submitList(projectList) {
+                        if (view != null && projectList.isNotEmpty()) {
+                            viewBinding.loadingView.root.isVisible = false
+                            viewBinding.gitRepoList.isVisible = true
+                        }
+                    }
                 }
             }
         }
