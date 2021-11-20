@@ -12,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.bala.gittrend.adapters.ProjectListAdapter
 import com.bala.gittrend.databinding.FragmentHomeBinding
+import com.bala.gittrend.models.ApiCallStatus
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
@@ -51,14 +52,14 @@ class HomeFragment : Fragment() {
                 viewModel.projectListWithResultStatus.collect { projectListWithResultStatus ->
                     val status = projectListWithResultStatus.first
                     val projectList = projectListWithResultStatus.second
-                    if (status) {
+                    if (status == ApiCallStatus.SUCCESS) {
                         projectListAdapter.submitList(projectList) {
                             if (view != null && projectList.isNotEmpty()) {
                                 viewBinding.loadingView.root.isVisible = false
                                 viewBinding.gitRepoList.isVisible = true
                             }
                         }
-                    } else {
+                    } else if (status == ApiCallStatus.FAILED) {
                         viewBinding.loadingView.root.isVisible = false
                         viewBinding.errorScreen.root.isVisible = true
                     }

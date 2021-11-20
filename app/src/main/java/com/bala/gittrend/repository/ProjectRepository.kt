@@ -18,7 +18,7 @@ class ProjectRepository @Inject constructor(
     private val projectDao: ProjectDao
 ) {
 
-    fun fetchTrendingProjects(): Flow<Pair<Boolean, List<ProjectOwnerWithProjects>>> {
+    fun fetchTrendingProjects(): Flow<Pair<ApiCallStatus, List<ProjectOwnerWithProjects>>> {
         application.launch(Dispatchers.IO) {
             val result = apiService.fetchTrendingGitRepos()
             if (result.isSuccess) {
@@ -42,15 +42,13 @@ class ProjectRepository @Inject constructor(
             } else {
                 application.dataStore.data.map { preferences ->
                     preferences[DataStorePreferenceKeys.LAST_SUCCESS_API_CALL] ?: -1
-                }.flatMapLatest { lastSuccessAppiCallTimeStamp ->
+                }.collectLatest { lastSuccessAppiCallTimeStamp ->
                     val isCacheExpired =
-                        if (lastSuccessAppiCallTimeStamp == -1L) false else ((System.currentTimeMillis() - lastSuccessAppiCallTimeStamp) > CACHE_EXPIRY_TIME)
+                        if (lastSuccessAppiCallTimeStamp == -1L) true else ((System.currentTimeMillis() - lastSuccessAppiCallTimeStamp) > CACHE_EXPIRY_TIME)
                     if (isCacheExpired) {
-                        flow<Pair<Boolean, List<ProjectOwnerWithProjects>>> {
-                            emit(Pair(false, emptyList()))
+                        application.dataStore.edit { dataStore ->
+                            dataStore[DataStorePreferenceKeys.LAST_SUCCESS_API_CALL] = -2
                         }
-                    } else {
-                        fetchTrendingProjectsCached()
                     }
                 }
             }
@@ -58,22 +56,40 @@ class ProjectRepository @Inject constructor(
         return fetchTrendingProjectsCached()
     }
 
-    private fun fetchTrendingProjectsCached(): Flow<Pair<Boolean, List<ProjectOwnerWithProjects>>> {
+    private fun fetchTrendingProjectsCached(): Flow<Pair<ApiCallStatus, List<ProjectOwnerWithProjects>>> {
         return application.dataStore.data.map { preferences ->
             preferences[DataStorePreferenceKeys.LAST_SUCCESS_API_CALL] ?: -1
         }.flatMapLatest { lastSuccessAppiCallTimeStamp ->
-            val isCacheExpired =
+            if (lastSuccessAppiCallTimeStamp == -2L) {
+                application.dataStore.edit { dataStore ->
+                    dataStore[DataStorePreferenceKeys.LAST_SUCCESS_API_CALL] = -1
+                }
+                flowBuilderWithApiCallStatus(ApiCallStatus.FAILED)
+            } else if (lastSuccessAppiCallTimeStamp == -1L || (lastSuccessAppiCallTimeStamp != -1L && (System.currentTimeMillis() - lastSuccessAppiCallTimeStamp) > CACHE_EXPIRY_TIME)) {
+                flowBuilderWithApiCallStatus(ApiCallStatus.LOADING)
+            } else {
+                getProjectItemsMappedToSuccess()
+            }
+            /*val isCacheExpired =
                 if (lastSuccessAppiCallTimeStamp == -1L) false else ((System.currentTimeMillis() - lastSuccessAppiCallTimeStamp) > CACHE_EXPIRY_TIME)
             if (isCacheExpired) {
-                flow<Pair<Boolean, List<ProjectOwnerWithProjects>>> {
-                    emit(Pair(false, emptyList()))
-                }
+                flowBuilderWithApiCallStatus(ApiCallStatus.LOADING)
             } else {
-                projectDao.getProjectOwnerWithProjects().map {
-                    Pair(true, it)
-                }
-            }
+                getProjectItemsMappedToSuccess()
+            }*/
         }
+    }
+
+    private fun flowBuilderWithApiCallStatus(apiCallStatus: ApiCallStatus): Flow<Pair<ApiCallStatus, List<ProjectOwnerWithProjects>>> {
+        return flow<Pair<ApiCallStatus, List<ProjectOwnerWithProjects>>> {
+            emit(Pair(apiCallStatus, emptyList()))
+        }.flowOn(Dispatchers.IO)
+    }
+
+    private fun getProjectItemsMappedToSuccess(): Flow<Pair<ApiCallStatus, List<ProjectOwnerWithProjects>>> {
+        return projectDao.getProjectOwnerWithProjects().map {
+            Pair(ApiCallStatus.SUCCESS, it)
+        }.flowOn(Dispatchers.IO)
     }
 
     private fun getProjectInfos(projectInfoParsedList: ProjectInfoParsedList): List<ProjectInfo> {
