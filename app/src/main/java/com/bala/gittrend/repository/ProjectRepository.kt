@@ -6,10 +6,8 @@ import com.bala.gittrend.apiservice.ApiService
 import com.bala.gittrend.datastore.DataStorePreferenceKeys
 import com.bala.gittrend.models.*
 import com.bala.gittrend.utils.kotlinExtensionUtils.dataStore
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class ProjectRepository @Inject constructor(
@@ -19,6 +17,9 @@ class ProjectRepository @Inject constructor(
 ) {
 
     fun fetchTrendingProjects(): Flow<Pair<ApiCallStatus, List<ProjectOwnerWithProjects>>> {
+        runBlocking {
+            resetLastSuccessApiCallIfNecessary()
+        }
         application.launch(Dispatchers.IO) {
             val result = apiService.fetchTrendingGitRepos()
             if (result.isSuccess) {
@@ -56,27 +57,37 @@ class ProjectRepository @Inject constructor(
         return fetchTrendingProjectsCached()
     }
 
+    private suspend fun resetLastSuccessApiCallIfNecessary() {
+        coroutineScope {
+            withContext(coroutineContext)
+            {
+                val lastSuccessAppiCallTimeStamp = application.dataStore.data.map { preferences ->
+                    preferences[DataStorePreferenceKeys.LAST_SUCCESS_API_CALL] ?: -1
+                }.first()
+                if (hasLastCallFailed(lastSuccessAppiCallTimeStamp)) {
+                    application.dataStore.edit { dataStore ->
+                        dataStore[DataStorePreferenceKeys.LAST_SUCCESS_API_CALL] = -1
+                    }
+                }
+            }
+        }
+    }
+
+    private fun hasLastCallFailed(lastSuccessAppiCallTimeStamp: Long): Boolean {
+        return lastSuccessAppiCallTimeStamp == -2L
+    }
+
     private fun fetchTrendingProjectsCached(): Flow<Pair<ApiCallStatus, List<ProjectOwnerWithProjects>>> {
         return application.dataStore.data.map { preferences ->
             preferences[DataStorePreferenceKeys.LAST_SUCCESS_API_CALL] ?: -1
         }.flatMapLatest { lastSuccessAppiCallTimeStamp ->
             if (lastSuccessAppiCallTimeStamp == -2L) {
-                application.dataStore.edit { dataStore ->
-                    dataStore[DataStorePreferenceKeys.LAST_SUCCESS_API_CALL] = -1
-                }
                 flowBuilderWithApiCallStatus(ApiCallStatus.FAILED)
             } else if (lastSuccessAppiCallTimeStamp == -1L || (lastSuccessAppiCallTimeStamp != -1L && (System.currentTimeMillis() - lastSuccessAppiCallTimeStamp) > CACHE_EXPIRY_TIME)) {
                 flowBuilderWithApiCallStatus(ApiCallStatus.LOADING)
             } else {
                 getProjectItemsMappedToSuccess()
             }
-            /*val isCacheExpired =
-                if (lastSuccessAppiCallTimeStamp == -1L) false else ((System.currentTimeMillis() - lastSuccessAppiCallTimeStamp) > CACHE_EXPIRY_TIME)
-            if (isCacheExpired) {
-                flowBuilderWithApiCallStatus(ApiCallStatus.LOADING)
-            } else {
-                getProjectItemsMappedToSuccess()
-            }*/
         }
     }
 
@@ -124,6 +135,6 @@ class ProjectRepository @Inject constructor(
     }
 
     companion object {
-        private const val CACHE_EXPIRY_TIME = 2 * 60 * 1000L
+        private const val CACHE_EXPIRY_TIME = 0.5 * 60 * 1000L
     }
 }
