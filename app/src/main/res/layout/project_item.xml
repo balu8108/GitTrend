@@ -62,19 +62,45 @@
         app:layout_constraintStart_toStartOf="@+id/language"
         app:layout_constraintTop_toBottomOf="@+id/project_name" />
 
-
-    <include
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/language"
-        layout="@layout/project_highlights"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:paddingEnd="16dp"
         app:layout_constraintBottom_toTopOf="@+id/collapsed_divider"
         app:layout_constraintEnd_toStartOf="@+id/stars"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintStart_toEndOf="@id/photo_right_barrier"
-        app:layout_constraintTop_toBottomOf="@+id/description" />
+        app:layout_constraintTop_toBottomOf="@+id/description">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/language_icon"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:src="@drawable/language_icon"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/language_desc"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/language_desc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="4dp"
+            android:text="hello"
+            android:textColor="@color/black_text"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/language_icon"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 
     <include

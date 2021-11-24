@@ -50,9 +50,9 @@ class ProjectListAdapter @Inject constructor(@ActivityContext val context: Conte
                 description.text = projectItem.description + "(" + projectItem.projectUrl + ")"
 
                 if (projectItem.language != null) {
-                    language.desc.text = projectItem.language
+                    languageDesc.text = projectItem.language
                 } else {
-                    language.root.isVisible = false
+                    language.isVisible = false
                 }
 
                 stars.icon.setImageResource(R.mipmap.star_yellow)
