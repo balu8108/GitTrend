@@ -26,7 +26,7 @@ class HomeViewModel @Inject constructor(
             projectRepository.fetchTrendingProjects().map { projectOwnerWithProjectsWithResult ->
                 val resultStatus = projectOwnerWithProjectsWithResult.first
                 val projectOwnerWithProjects = projectOwnerWithProjectsWithResult.second
-                var projectList = mutableListOf<ProjectInfoParsed>()
+                val projectList = mutableListOf<ProjectInfoParsed>()
                 for (projectOwnerWithProject in projectOwnerWithProjects) {
                     projectList.addAll(projectOwnerWithProject.getProjectListFromProjectOwnerWithProjects())
                 }

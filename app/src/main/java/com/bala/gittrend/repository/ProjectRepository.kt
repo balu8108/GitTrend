@@ -149,6 +149,6 @@ class ProjectRepository @Inject constructor(
     }
 
     companion object {
-        private const val CACHE_EXPIRY_TIME = 0.5 * 60 * 1000L
+        private const val CACHE_EXPIRY_TIME = 2 * 60 * 60 * 1000L
     }
 }
