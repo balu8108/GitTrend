@@ -76,6 +76,15 @@ class HomeFragment : Fragment() {
         viewBinding.swipeContainer.setOnRefreshListener {
             viewModel.onRetry()
         }
+
+        viewBinding.toolbar.setOnMenuItemClickListener { menuItem ->
+            if (menuItem.itemId == R.id.sort_by_stars) {
+                viewModel.setSortMethod(HomeViewModel.SortMethod.SORT_BY_STARS)
+            } else {
+                viewModel.setSortMethod(HomeViewModel.SortMethod.SORT_BY_NAME)
+            }
+            true
+        }
     }
 
     private fun setLoadingView() {

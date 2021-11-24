@@ -18,6 +18,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0"
         app:layout_constraintVertical_chainStyle="packed"
+        app:menu="@menu/home_screen_menu"
         app:title="@string/trending"
         app:titleCentered="true" />
 

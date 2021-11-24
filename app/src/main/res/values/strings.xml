@@ -4,4 +4,6 @@
     <string name="error_screen_subtext">An alien is probable blocking your signal</string>
     <string name="retry">RETRY</string>
     <string name="trending">Trending</string>
+    <string name="sort_by_stars">Sort by stars</string>
+    <string name="sort_by_name">Sort by name</string>
 </resources>
