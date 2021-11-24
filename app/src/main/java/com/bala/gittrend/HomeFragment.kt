@@ -52,11 +52,12 @@ class HomeFragment : Fragment() {
                 viewModel.projectListWithResultStatus.collect { projectListWithResultStatus ->
                     val status = projectListWithResultStatus.first
                     val projectList = projectListWithResultStatus.second
+                    viewBinding.swipeContainer.isRefreshing = false
                     if (status == ApiCallStatus.SUCCESS) {
                         projectListAdapter.submitList(projectList) {
                             if (view != null && projectList.isNotEmpty()) {
                                 viewBinding.loadingView.root.isVisible = false
-                                viewBinding.gitRepoList.isVisible = true
+                                viewBinding.swipeContainer.isVisible = true
                             }
                         }
                     } else if (status == ApiCallStatus.FAILED) {
@@ -71,11 +72,15 @@ class HomeFragment : Fragment() {
             setLoadingView()
             viewModel.onRetry()
         }
+
+        viewBinding.swipeContainer.setOnRefreshListener {
+            viewModel.onRetry()
+        }
     }
 
     private fun setLoadingView() {
         viewBinding.loadingView.root.isVisible = true
-        viewBinding.gitRepoList.isVisible = false
+        viewBinding.swipeContainer.isVisible = false
         viewBinding.errorScreen.root.isVisible = false
     }
 }
