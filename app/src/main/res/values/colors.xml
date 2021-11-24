@@ -14,5 +14,5 @@
     <color name="skeleton_background">#eeeeee</color>
     <color name="error_screen_title">#FF4A4A4A</color>
     <color name="error_screen_sub_text">#FF929292</color>
-
+    <color name="retry_color">#FF31B057</color>
 </resources>

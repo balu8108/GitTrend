@@ -9,6 +9,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @HiltViewModel
@@ -26,5 +27,12 @@ class HomeViewModel @Inject constructor(
             }
             Pair(resultStatus, projectList.toList())
         }.shareIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 1)
+    }
+
+    fun onRetry() {
+        runBlocking {
+            projectRepository.resetLastSuccessApiCallIfNecessary()
+        }
+        projectRepository.makeTrendingProjectsApiCall()
     }
 }

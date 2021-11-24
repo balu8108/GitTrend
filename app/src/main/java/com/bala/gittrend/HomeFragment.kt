@@ -45,7 +45,7 @@ class HomeFragment : Fragment() {
 
     private fun init() {
         viewBinding.gitRepoList.adapter = projectListAdapter
-        viewBinding.loadingView.root.isVisible = true
+        setLoadingView()
         lifecycleScope.launch(Dispatchers.Main) {
             repeatOnLifecycle(Lifecycle.State.STARTED)
             {
@@ -66,5 +66,16 @@ class HomeFragment : Fragment() {
                 }
             }
         }
+
+        viewBinding.errorScreen.retryButton.setOnClickListener {
+            setLoadingView()
+            viewModel.onRetry()
+        }
+    }
+
+    private fun setLoadingView() {
+        viewBinding.loadingView.root.isVisible = true
+        viewBinding.gitRepoList.isVisible = false
+        viewBinding.errorScreen.root.isVisible = false
     }
 }

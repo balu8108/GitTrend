@@ -20,6 +20,11 @@ class ProjectRepository @Inject constructor(
         runBlocking {
             resetLastSuccessApiCallIfNecessary()
         }
+        makeTrendingProjectsApiCall()
+        return fetchTrendingProjectsCached()
+    }
+
+    fun makeTrendingProjectsApiCall() {
         application.launch(Dispatchers.IO) {
             val result = apiService.fetchTrendingGitRepos()
             if (result.isSuccess) {
@@ -41,23 +46,12 @@ class ProjectRepository @Inject constructor(
                     }
                 }
             } else {
-                application.dataStore.data.map { preferences ->
-                    preferences[DataStorePreferenceKeys.LAST_SUCCESS_API_CALL] ?: -1
-                }.collectLatest { lastSuccessAppiCallTimeStamp ->
-                    val isCacheExpired =
-                        if (lastSuccessAppiCallTimeStamp == -1L) true else ((System.currentTimeMillis() - lastSuccessAppiCallTimeStamp) > CACHE_EXPIRY_TIME)
-                    if (isCacheExpired) {
-                        application.dataStore.edit { dataStore ->
-                            dataStore[DataStorePreferenceKeys.LAST_SUCCESS_API_CALL] = -2
-                        }
-                    }
-                }
+                setLastSuccessApiCallIfNecessaryToFailed()
             }
         }
-        return fetchTrendingProjectsCached()
     }
 
-    private suspend fun resetLastSuccessApiCallIfNecessary() {
+    suspend fun resetLastSuccessApiCallIfNecessary() {
         coroutineScope {
             withContext(coroutineContext)
             {
@@ -73,8 +67,28 @@ class ProjectRepository @Inject constructor(
         }
     }
 
+    private suspend fun setLastSuccessApiCallIfNecessaryToFailed() {
+        coroutineScope {
+            withContext(coroutineContext)
+            {
+                val lastSuccessAppiCallTimeStamp = application.dataStore.data.map { preferences ->
+                    preferences[DataStorePreferenceKeys.LAST_SUCCESS_API_CALL] ?: -1
+                }.first()
+                if (isLastSuccessApiCallExpired(lastSuccessAppiCallTimeStamp)) {
+                    application.dataStore.edit { dataStore ->
+                        dataStore[DataStorePreferenceKeys.LAST_SUCCESS_API_CALL] = -2
+                    }
+                }
+            }
+        }
+    }
+
     private fun hasLastCallFailed(lastSuccessAppiCallTimeStamp: Long): Boolean {
         return lastSuccessAppiCallTimeStamp == -2L
+    }
+
+    private fun isLastSuccessApiCallExpired(lastSuccessAppiCallTimeStamp: Long): Boolean {
+        return if (lastSuccessAppiCallTimeStamp == -1L) true else ((System.currentTimeMillis() - lastSuccessAppiCallTimeStamp) > CACHE_EXPIRY_TIME)
     }
 
     private fun fetchTrendingProjectsCached(): Flow<Pair<ApiCallStatus, List<ProjectOwnerWithProjects>>> {
@@ -83,7 +97,7 @@ class ProjectRepository @Inject constructor(
         }.flatMapLatest { lastSuccessAppiCallTimeStamp ->
             if (lastSuccessAppiCallTimeStamp == -2L) {
                 flowBuilderWithApiCallStatus(ApiCallStatus.FAILED)
-            } else if (lastSuccessAppiCallTimeStamp == -1L || (lastSuccessAppiCallTimeStamp != -1L && (System.currentTimeMillis() - lastSuccessAppiCallTimeStamp) > CACHE_EXPIRY_TIME)) {
+            } else if (isLastSuccessApiCallExpired(lastSuccessAppiCallTimeStamp)) {
                 flowBuilderWithApiCallStatus(ApiCallStatus.LOADING)
             } else {
                 getProjectItemsMappedToSuccess()

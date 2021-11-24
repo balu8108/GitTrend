@@ -2,6 +2,7 @@ package com.bala.gittrend.di
 
 import android.content.Context
 import androidx.room.Room
+import com.bala.gittrend.GitTrendApplication
 import com.bala.gittrend.repository.AppDatabase
 import com.bala.gittrend.repository.ProjectDao
 import dagger.Module
@@ -28,5 +29,11 @@ object DatabaseModule {
     @Provides
     fun provideMovieDao(appDatabase: AppDatabase): ProjectDao {
         return appDatabase.projectDao()
+    }
+
+    @Singleton
+    @Provides
+    fun provideApplicationContext(@ApplicationContext context: Context): GitTrendApplication {
+        return context as GitTrendApplication
     }
 }
